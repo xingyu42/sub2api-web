@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}仪表盘 · sub2api 用量{% endblock %}
+{% macro card(title, value, sub=None, accent='zinc') %}
+<div class="bg-white p-5 rounded-lg border border-zinc-200">
+  <div class="text-xs text-zinc-500 mb-1">{{ title }}</div>
+  <div class="text-2xl font-semibold text-zinc-900">{{ value }}</div>
+  {% if sub %}<div class="text-xs text-zinc-500 mt-1">{{ sub }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-xl font-semibold">仪表盘</h1>
+  <p class="text-sm text-zinc-500 mt-1">最近 7 天（{{ start_date }} 至 {{ end_date }}）</p>
+</div>
+
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  {{ card('总用户', stats.total_users|fmt_int, '今日新增 ' ~ (stats.today_new_users|fmt_int)) }}
+  {{ card('总 API Key', stats.total_api_keys|fmt_int, '活跃 ' ~ (stats.active_api_keys|fmt_int)) }}
+  {{ card('上游账号', stats.total_accounts|fmt_int, '正常 ' ~ (stats.normal_accounts|fmt_int) ~ ' / 异常 ' ~ (stats.error_accounts|fmt_int)) }}
+  {{ card('RPM / TPM', (stats.rpm|fmt_int) ~ ' / ' ~ (stats.tpm|fmt_int), '实时性能') }}
+</section>
+
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  {{ card('今日请求', stats.today_requests|fmt_int) }}
+  {{ card('今日 Token', stats.today_tokens|fmt_int,
+          '输入 ' ~ (stats.today_input_tokens|fmt_int) ~ ' · 输出 ' ~ (stats.today_output_tokens|fmt_int)) }}
+  {{ card('今日费用', stats.today_cost|fmt_money, '实际扣除 ' ~ (stats.today_actual_cost|fmt_money)) }}
+  {{ card('累计费用', stats.total_cost|fmt_money, '累计 Token ' ~ (stats.total_tokens|fmt_int)) }}
+</section>
+
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  <div class="lg:col-span-2 bg-white p-5 rounded-lg border border-zinc-200">
+    <h2 class="text-sm font-medium text-zinc-700 mb-4">7 日用量趋势</h2>
+    <canvas id="trendChart" height="120"></canvas>
+  </div>
+  <div class="bg-white p-5 rounded-lg border border-zinc-200">
+    <h2 class="text-sm font-medium text-zinc-700 mb-4">模型分布</h2>
+    <canvas id="modelChart" height="180"></canvas>
+  </div>
+</section>
+
+<script>
+const trendData = {{ trend|tojson }};
+const modelData = {{ models|tojson }};
+
+(function renderTrend() {
+  const ctx = document.getElementById('trendChart');
+  const series = (trendData && (trendData.trend || trendData.items || trendData.data)) || [];
+  const labels = series.map(p => p.date || p.time || p.bucket || '');
+  const tokens = series.map(p => p.total_tokens ?? p.tokens ?? 0);
+  const cost = series.map(p => p.total_cost ?? p.cost ?? 0);
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Token', data: tokens, borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,.1)', yAxisID: 'y' },
+        { label: '费用 ($)', data: cost, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,.1)', yAxisID: 'y1' },
+      ]
+    },
+    options: {
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        y: { beginAtZero: true, position: 'left' },
+        y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false } },
+      }
+    }
+  });
+})();
+
+(function renderModels() {
+  const ctx = document.getElementById('modelChart');
+  const items = Array.isArray(modelData)
+    ? modelData
+    : (modelData && (modelData.items || modelData.models || modelData.stats)) || [];
+  const top = items.slice(0, 8);
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: top.map(m => m.model || m.name || '未知'),
+      datasets: [{
+        data: top.map(m => m.total_tokens ?? m.tokens ?? m.requests ?? 0),
+        backgroundColor: ['#0ea5e9','#f97316','#10b981','#a855f7','#eab308','#ef4444','#6366f1','#14b8a6']
+      }]
+    },
+    options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } }
+  });
+})();
+</script>
+{% endblock %}
