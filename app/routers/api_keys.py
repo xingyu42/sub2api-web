@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
 from fastapi.responses import HTMLResponse
 
 from .. import sub2api_client as api
@@ -10,12 +10,7 @@ from ..security import require_session
 
 router = APIRouter(prefix="/api-keys")
 
-# 各窗口长度（秒）
-WINDOWS = {
-    "5h": 5 * 3600,
-    "1d": 24 * 3600,
-    "7d": 7 * 24 * 3600,
-}
+WINDOWS = {"5h": 5 * 3600, "1d": 24 * 3600, "7d": 7 * 24 * 3600}
 
 
 def _num(v) -> float:
@@ -26,7 +21,7 @@ def _num(v) -> float:
 
 
 @router.get("", response_class=HTMLResponse)
-async def list_view(request: Request):
+async def list_view(request: Request, fragment: str = Query("")):
     redirect = require_session(request)
     if redirect:
         return redirect
@@ -59,29 +54,15 @@ async def list_view(request: Request):
             else:
                 remaining = None
             k["_windows"].append({
-                "label": w,
-                "pct": pct,
-                "limit": limit,
-                "used": used,
-                "remaining": remaining,
+                "label": w, "pct": pct, "limit": limit, "used": used, "remaining": remaining,
             })
-    items = sorted(
-        keys,
-        key=lambda k: _num(k.get("_usage", {}).get("total_actual_cost")),
-        reverse=True,
-    )
+    items = sorted(keys, key=lambda k: _num(k.get("_usage", {}).get("total_actual_cost")), reverse=True)
     total = len(items)
 
-    return templates.TemplateResponse(
-        "api_keys.html",
-        {
-            "request": request,
-            "active": "api-keys",
-            "items": items,
-            "total": total,
-            "updated_at": updated_at,
-        },
-    )
+    context = {"request": request, "active": "api-keys", "items": items, "total": total, "updated_at": updated_at}
+    if fragment:
+        return templates.TemplateResponse("api_keys_table.html", context)
+    return templates.TemplateResponse("api_keys.html", context)
 
 
 def _parse_dt(value: Optional[str]) -> Optional[datetime]:
@@ -99,7 +80,7 @@ def _parse_dt(value: Optional[str]) -> Optional[datetime]:
 
 def _humanize(seconds: float) -> str:
     if seconds <= 0:
-        return "已重置"
+        return "\u5df2\u91cd\u7f6e"
     seconds = int(seconds)
     d, rem = divmod(seconds, 86400)
     h, rem = divmod(rem, 3600)
@@ -112,7 +93,6 @@ def _humanize(seconds: float) -> str:
 
 
 def _sum_trend(trend: list[dict], since: datetime) -> dict:
-    """汇总 trend 中 since 之后的点。trend 的 date 字段格式为 'YYYY-MM-DD HH:MM' 或 'YYYY-MM-DD'（视为本地时间）。"""
     agg = {"requests": 0, "tokens": 0, "actual_cost": 0.0, "cost": 0.0}
     since_naive = since.astimezone().replace(tzinfo=None)
     for p in trend or []:
@@ -143,13 +123,11 @@ async def detail_view(request: Request, key_id: int):
     if key is None:
         return templates.TemplateResponse(
             "error.html",
-            {"request": request, "active": "api-keys", "status": 404,
-             "message": f"未找到 API Key #{key_id}"},
+            {"request": request, "active": "api-keys", "status": 404, "message": f"\u672a\u627e\u5230 API Key #{key_id}"},
             status_code=404,
         )
 
     now = datetime.now(timezone.utc)
-    # 拉最近 8 天的小时级 trend（覆盖 7d 窗口），按 api_key_id 过滤
     start_date = (now - timedelta(days=8)).astimezone().strftime("%Y-%m-%d")
     end_date = now.astimezone().strftime("%Y-%m-%d")
     trend_resp = await api.get_usage_trend_for_key(key_id, start_date, end_date, granularity="hour")
@@ -163,30 +141,15 @@ async def detail_view(request: Request, key_id: int):
         used = _num(key.get(f"usage_{w}"))
         win_start = _parse_dt(key.get(f"window_{w}_start"))
         pct = round(used / limit * 100, 1) if limit > 0 else None
-        if win_start is not None:
-            reset_at = win_start + timedelta(seconds=seconds)
-            remaining = _humanize((reset_at - now).total_seconds())
-        else:
-            remaining = "—"
+        remaining = _humanize((win_start + timedelta(seconds=seconds) - now).total_seconds()) if win_start else "\u2014"
         windows.append({
-            "label": w,
-            "requests": agg["requests"],
-            "tokens": agg["tokens"],
-            "actual_cost": agg["actual_cost"],
-            "user_cost": agg["cost"],
-            "limit": limit,
-            "used": used,
-            "pct": pct,
-            "remaining": remaining,
+            "label": w, "requests": agg["requests"], "tokens": agg["tokens"],
+            "actual_cost": agg["actual_cost"], "user_cost": agg["cost"],
+            "limit": limit, "used": used, "pct": pct, "remaining": remaining,
         })
 
     return templates.TemplateResponse(
         "api_key_detail.html",
-        {
-            "request": request,
-            "active": "api-keys",
-            "key": key,
-            "windows": windows,
-            "updated_at": now.astimezone().strftime("%Y-%m-%d %H:%M:%S"),
-        },
+        {"request": request, "active": "api-keys", "key": key, "windows": windows,
+         "updated_at": now.astimezone().strftime("%Y-%m-%d %H:%M:%S")},
     )

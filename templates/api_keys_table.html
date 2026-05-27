@@ -1,0 +1,64 @@
+<div id="api-keys-table">
+  <div class="bg-white rounded-lg border border-zinc-200 overflow-hidden">
+    <table class="min-w-full text-sm">
+      <thead class="bg-zinc-50 text-zinc-600">
+        <tr>
+          <th class="px-3 py-2 text-left font-medium">Key 名称</th>
+          <th class="px-3 py-2 text-left font-medium">所属用户</th>
+          <th class="px-3 py-2 text-left font-medium">分组</th>
+          <th class="px-3 py-2 text-left font-medium">状态</th>
+          <th class="px-3 py-2 text-left font-medium w-[200px]">速率限速</th>
+          <th class="px-3 py-2 text-right font-medium">今日费用</th>
+          <th class="px-3 py-2 text-right font-medium">累计费用</th>
+          <th class="px-3 py-2 text-left font-medium">最后使用</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-zinc-100">
+        {% for k in items %}
+        {% set u = k._usage or {} %}
+        <tr class="hover:bg-zinc-50">
+          <td class="px-3 py-2 font-medium text-zinc-900">
+            <a href="/api-keys/{{ k.id }}" class="hover:text-sky-600">{{ k.name or ('#' ~ k.id) }}</a>
+          </td>
+          <td class="px-3 py-2 text-zinc-600">{{ k._user_email or k._user_id or '-' }}</td>
+          <td class="px-3 py-2 text-zinc-600">{{ (k.group.name if k.group else '-') }}</td>
+          <td class="px-3 py-2">
+            {% set st = k.status or 'unknown' %}
+            {% set cls = {'active':'bg-emerald-100 text-emerald-700','disabled':'bg-zinc-100 text-zinc-600','expired':'bg-amber-100 text-amber-700'}.get(st, 'bg-zinc-100 text-zinc-600') %}
+            <span class="px-2 py-0.5 rounded text-xs {{ cls }}">{{ st }}</span>
+          </td>
+          <td class="px-3 py-2">
+            <div class="space-y-0.5">
+              {% set active = k._windows | selectattr('limit', 'gt', 0) | list %}
+              {% if active %}
+                {% for w in active %}
+                <div class="py-1">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-[10px] font-semibold text-zinc-500">{{ w.label }}</span>
+                    <span class="text-[11px] tabular-nums text-zinc-600">{{ w.used|fmt_money(2) }}/{{ w.limit|fmt_money(2) }}</span>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-zinc-200 overflow-hidden">
+                    <div class="h-full {% if w.pct is none %}bg-zinc-300{% elif w.pct >= 90 %}bg-red-500{% elif w.pct >= 60 %}bg-amber-500{% else %}bg-emerald-500{% endif %}" style="width: {{ (w.pct if w.pct is not none and w.pct <= 100 else 100) }}%"></div>
+                  </div>
+                  {% if loop.last and w.remaining %}
+                  <div class="text-[10px] text-zinc-400 mt-0.5">⟳ {{ w.remaining }}</div>
+                  {% endif %}
+                </div>
+                {% endfor %}
+              {% else %}
+                <span class="text-[11px] text-zinc-400">未配置</span>
+              {% endif %}
+            </div>
+          </td>
+          <td class="px-3 py-2 text-right tabular-nums">{{ u.today_actual_cost|fmt_money(2) }}</td>
+          <td class="px-3 py-2 text-right tabular-nums font-medium">{{ u.total_actual_cost|fmt_money(2) }}</td>
+          <td class="px-3 py-2 text-xs text-zinc-500">{{ k.last_used_at|fmt_dt }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="px-4 py-8 text-center text-zinc-500">没有数据</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="text-xs text-zinc-400 text-right mt-2">数据更新于 {{ updated_at }}</div>
+</div>

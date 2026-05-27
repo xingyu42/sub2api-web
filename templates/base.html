@@ -8,8 +8,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-    .nav-link { @apply px-3 py-2 rounded-md text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white; }
-    .nav-link.active { @apply bg-zinc-800 text-white; }
+    .nav-pill { @apply px-4 py-1.5 rounded-full text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-200 ring-1 ring-white/10 hover:ring-white/20; }
+    .nav-pill.active { @apply bg-gradient-to-r from-indigo-500 to-sky-500 text-white shadow-md shadow-indigo-500/25 ring-0; }
+    @media (max-width: 640px) {
+      .nav-pill { @apply px-3 py-1 text-xs; }
+    }
   </style>
 </head>
 <body class="bg-zinc-50 text-zinc-900 min-h-screen">
@@ -17,16 +20,16 @@
   <nav class="bg-zinc-900 text-zinc-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex h-14 items-center justify-between">
-        <div class="flex items-center gap-6">
-          <span class="font-semibold text-white">sub2api 用量</span>
-          <div class="flex gap-1">
-            <a class="nav-link {% if active == 'dashboard' %}active{% endif %}" href="/">仪表盘</a>
-            <a class="nav-link {% if active == 'accounts' %}active{% endif %}" href="/accounts">上游账号</a>
-            <a class="nav-link {% if active == 'api-keys' %}active{% endif %}" href="/api-keys">API Keys</a>
+        <div class="flex items-center gap-4 sm:gap-8">
+          <span class="font-semibold text-white text-sm sm:text-base">sub2api 用量</span>
+          <div class="flex gap-2 sm:gap-3">
+            <a class="nav-pill {% if active == 'dashboard' %}active{% endif %}" href="/">仪表盘</a>
+            <a class="nav-pill {% if active == 'accounts' %}active{% endif %}" href="/accounts">上游账号</a>
+            <a class="nav-pill {% if active == 'api-keys' %}active{% endif %}" href="/api-keys">API Keys</a>
           </div>
         </div>
         <form method="post" action="/logout">
-          <button class="text-sm text-zinc-400 hover:text-white" type="submit">退出</button>
+          <button class="text-xs sm:text-sm text-zinc-400 hover:text-white" type="submit">退出</button>
         </form>
       </div>
     </div>
