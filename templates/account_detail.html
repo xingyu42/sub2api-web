@@ -94,7 +94,7 @@
   <canvas id="statsChart" height="80"></canvas>
 </section>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
   const statsData = {{ stats| tojson if stats else 'null' }};
   (function renderStats() {
     const ctx = document.getElementById('statsChart');

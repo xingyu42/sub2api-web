@@ -2,6 +2,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from ..deps import templates
+from ..limiter import limiter
 from ..security import clear_session, is_authenticated, issue_session, verify_password
 
 router = APIRouter()
@@ -15,6 +16,7 @@ async def login_page(request: Request):
 
 
 @router.post("/login", response_class=HTMLResponse)
+@limiter.limit("5/minute")  # 每分钟最多 5 次登录尝试
 async def login_submit(request: Request, password: str = Form(...)):
     if not verify_password(password):
         return templates.TemplateResponse(

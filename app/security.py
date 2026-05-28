@@ -26,7 +26,7 @@ def issue_session(response: Response) -> None:
         max_age=SESSION_MAX_AGE,
         httponly=True,
         samesite="lax",
-        secure=False,  # 部署到 HTTPS 后建议改 true 或交给反代处理
+        secure=settings.COOKIE_SECURE,  # 从配置读取，生产环境强制启用
     )
 
 

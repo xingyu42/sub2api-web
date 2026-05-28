@@ -7,51 +7,58 @@
     <h1 class="text-xl font-semibold">API Keys</h1>
     <p class="text-sm text-zinc-500 mt-1">跨用户聚合，共 {{ total|fmt_int }} 个 Key · 按累计费用降序</p>
   </div>
-  <button onclick="refreshTable()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors" title="刷新数据" id="refresh-btn">
-    <svg id="refresh-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+  <button onclick="refreshTable()"
+    class="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors"
+    title="刷新数据" id="refresh-btn">
+    <svg id="refresh-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="23 4 23 10 17 10" />
+      <polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </svg>
     刷新
   </button>
 </div>
 
 {% include "api_keys_table.html" %}
 
-<script>
-function refreshTable() {
-  const btn = document.getElementById('refresh-btn');
-  const icon = document.getElementById('refresh-icon');
-  btn.classList.add('pointer-events-none', 'opacity-50');
-  icon.classList.add('animate-spin');
-  btn.querySelector('span') ? null : null;
-  Array.from(btn.childNodes).find(n => n.nodeType === 3 && n.textContent.trim() === '刷新').textContent = '刷新中...';
+<script nonce="{{ csp_nonce() }}">
+  function refreshTable() {
+    const btn = document.getElementById('refresh-btn');
+    const icon = document.getElementById('refresh-icon');
+    btn.classList.add('pointer-events-none', 'opacity-50');
+    icon.classList.add('animate-spin');
+    btn.querySelector('span') ? null : null;
+    Array.from(btn.childNodes).find(n => n.nodeType === 3 && n.textContent.trim() === '刷新').textContent = '刷新中...';
 
-  fetch('/api-keys?fragment=1')
-    .then(r => {
-      if (!r.ok) throw new Error(r.status);
-      return r.text();
-    })
-    .then(html => {
-      const oldTable = document.getElementById('api-keys-table');
-      const temp = document.createElement('div');
-      temp.innerHTML = html;
-      const newTable = temp.querySelector('#api-keys-table');
-      if (newTable && oldTable) {
-        newTable.style.opacity = '0';
-        oldTable.parentNode.replaceChild(newTable, oldTable);
-        requestAnimationFrame(() => {
-          newTable.style.transition = 'opacity 0.2s';
-          newTable.style.opacity = '1';
-        });
-      } else {
-        location.reload();
-      }
-    })
-    .catch(() => location.reload())
-    .finally(() => {
-      btn.classList.remove('pointer-events-none', 'opacity-50');
-      icon.classList.remove('animate-spin');
-      const textNode = Array.from(btn.childNodes).find(n => n.nodeType === 3 && n.textContent.trim().startsWith('刷新'));
-      if (textNode) textNode.textContent = '刷新';
-    });
-}
+    fetch('/api-keys?fragment=1')
+      .then(r => {
+        if (!r.ok) throw new Error(r.status);
+        return r.text();
+      })
+      .then(html => {
+        const oldTable = document.getElementById('api-keys-table');
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        const newTable = temp.querySelector('#api-keys-table');
+        if (newTable && oldTable) {
+          newTable.style.opacity = '0';
+          oldTable.parentNode.replaceChild(newTable, oldTable);
+          requestAnimationFrame(() => {
+            newTable.style.transition = 'opacity 0.2s';
+            newTable.style.opacity = '1';
+          });
+        } else {
+          location.reload();
+        }
+      })
+      .catch(() => location.reload())
+      .finally(() => {
+        btn.classList.remove('pointer-events-none', 'opacity-50');
+        icon.classList.remove('animate-spin');
+        const textNode = Array.from(btn.childNodes).find(n => n.nodeType === 3 && n.textContent.trim().startsWith('刷新'));
+        if (textNode) textNode.textContent = '刷新';
+      });
+  }
 </script>
 {% endblock %}

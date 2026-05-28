@@ -1,8 +1,10 @@
 import asyncio
+import re
 from typing import Optional
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel, Field, validator
 
 from .. import sub2api_client as api
 from ..deps import templates
@@ -11,12 +13,22 @@ from ..security import require_session
 router = APIRouter(prefix="/accounts")
 
 
+class AccountFilters(BaseModel):
+    """账号列表查询参数验证"""
+    platform: str = Field("", max_length=50, pattern=r'^[a-zA-Z0-9_-]*$')
+    status: str = Field("", max_length=20, pattern=r'^[a-zA-Z0-9_-]*$')
+    search: str = Field("", max_length=100)
+    
+    @validator('search')
+    def sanitize_search(cls, v):
+        # 移除潜在危险字符
+        return re.sub(r'[<>"\']', '', v)
+
+
 @router.get("", response_class=HTMLResponse)
 async def list_view(
     request: Request,
-    platform: str = Query(""),
-    status: str = Query(""),
-    search: str = Query(""),
+    filters: AccountFilters = Depends(),
 ):
     redirect = require_session(request)
     if redirect:
@@ -26,9 +38,9 @@ async def list_view(
         page=1,
         page_size=200,
         lite=True,
-        platform=platform or None,
-        status=status or None,
-        search=search or None,
+        platform=filters.platform or None,
+        status=filters.status or None,
+        search=filters.search or None,
     )
     items = page_data.get("items") or []
 
@@ -56,7 +68,7 @@ async def list_view(
             "active": "accounts",
             "items": items,
             "total": page_data.get("total", len(items)),
-            "filters": {"platform": platform, "status": status, "search": search},
+            "filters": {"platform": filters.platform, "status": filters.status, "search": filters.search},
         },
     )
 
@@ -107,8 +119,8 @@ def _build_windows(usage: Optional[dict]) -> list[dict]:
             "label": label,
             "requests": ws.get("requests"),
             "tokens": ws.get("tokens"),
-            "actual_cost": ws.get("standard_cost"),  # 截图里的 "A"
-            "user_cost": ws.get("user_cost"),         # 截图里的 "U"
+            "actual_cost": ws.get("standard_cost"),
+            "user_cost": ws.get("user_cost"),
             "pct": src.get("utilization"),
             "remaining_seconds": src.get("remaining_seconds"),
             "resets_at": src.get("resets_at"),

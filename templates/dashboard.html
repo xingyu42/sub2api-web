@@ -17,14 +17,15 @@
 <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
   {{ card('总用户', stats.total_users|fmt_int, '今日新增 ' ~ (stats.today_new_users|fmt_int)) }}
   {{ card('总 API Key', stats.total_api_keys|fmt_int, '活跃 ' ~ (stats.active_api_keys|fmt_int)) }}
-  {{ card('上游账号', stats.total_accounts|fmt_int, '正常 ' ~ (stats.normal_accounts|fmt_int) ~ ' / 异常 ' ~ (stats.error_accounts|fmt_int)) }}
+  {{ card('上游账号', stats.total_accounts|fmt_int, '正常 ' ~ (stats.normal_accounts|fmt_int) ~ ' / 异常 ' ~
+  (stats.error_accounts|fmt_int)) }}
   {{ card('RPM / TPM', (stats.rpm|fmt_int) ~ ' / ' ~ (stats.tpm|fmt_int), '实时性能') }}
 </section>
 
 <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
   {{ card('今日请求', stats.today_requests|fmt_int) }}
   {{ card('今日 Token', stats.today_tokens|fmt_int,
-          '输入 ' ~ (stats.today_input_tokens|fmt_int) ~ ' · 输出 ' ~ (stats.today_output_tokens|fmt_int)) }}
+  '输入 ' ~ (stats.today_input_tokens|fmt_int) ~ ' · 输出 ' ~ (stats.today_output_tokens|fmt_int)) }}
   {{ card('今日费用', stats.today_cost|fmt_money, '实际扣除 ' ~ (stats.today_actual_cost|fmt_money)) }}
   {{ card('累计费用', stats.total_cost|fmt_money, '累计 Token ' ~ (stats.total_tokens|fmt_int)) }}
 </section>
@@ -36,56 +37,58 @@
   </div>
   <div class="bg-white p-5 rounded-lg border border-zinc-200">
     <h2 class="text-sm font-medium text-zinc-700 mb-4">模型分布</h2>
-    <canvas id="modelChart" height="180"></canvas>
+    <div class="max-w-[320px] mx-auto">
+      <canvas id="modelChart"></canvas>
+    </div>
   </div>
 </section>
 
-<script>
-const trendData = {{ trend|tojson }};
-const modelData = {{ models|tojson }};
+<script nonce="{{ csp_nonce() }}">
+  const trendData = {{ trend| tojson }};
+  const modelData = {{ models| tojson }};
 
-(function renderTrend() {
-  const ctx = document.getElementById('trendChart');
-  const series = (trendData && (trendData.trend || trendData.items || trendData.data)) || [];
-  const labels = series.map(p => p.date || p.time || p.bucket || '');
-  const tokens = series.map(p => p.total_tokens ?? p.tokens ?? 0);
-  const cost = series.map(p => p.total_cost ?? p.cost ?? 0);
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [
-        { label: 'Token', data: tokens, borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,.1)', yAxisID: 'y' },
-        { label: '费用 ($)', data: cost, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,.1)', yAxisID: 'y1' },
-      ]
-    },
-    options: {
-      interaction: { mode: 'index', intersect: false },
-      scales: {
-        y: { beginAtZero: true, position: 'left' },
-        y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false } },
+  (function renderTrend() {
+    const ctx = document.getElementById('trendChart');
+    const series = (trendData && (trendData.trend || trendData.items || trendData.data)) || [];
+    const labels = series.map(p => p.date || p.time || p.bucket || '');
+    const tokens = series.map(p => p.total_tokens ?? p.tokens ?? 0);
+    const cost = series.map(p => p.total_cost ?? p.cost ?? 0);
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Token', data: tokens, borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,.1)', yAxisID: 'y' },
+          { label: '费用 ($)', data: cost, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,.1)', yAxisID: 'y1' },
+        ]
+      },
+      options: {
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          y: { beginAtZero: true, position: 'left' },
+          y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false } },
+        }
       }
-    }
-  });
-})();
+    });
+  })();
 
-(function renderModels() {
-  const ctx = document.getElementById('modelChart');
-  const items = Array.isArray(modelData)
-    ? modelData
-    : (modelData && (modelData.items || modelData.models || modelData.stats)) || [];
-  const top = items.slice(0, 8);
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: top.map(m => m.model || m.name || '未知'),
-      datasets: [{
-        data: top.map(m => m.total_tokens ?? m.tokens ?? m.requests ?? 0),
-        backgroundColor: ['#0ea5e9','#f97316','#10b981','#a855f7','#eab308','#ef4444','#6366f1','#14b8a6']
-      }]
-    },
-    options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } }
-  });
-})();
+  (function renderModels() {
+    const ctx = document.getElementById('modelChart');
+    const items = Array.isArray(modelData)
+      ? modelData
+      : (modelData && (modelData.items || modelData.models || modelData.stats)) || [];
+    const top = items.slice(0, 8);
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: top.map(m => m.model || m.name || '未知'),
+        datasets: [{
+          data: top.map(m => m.total_tokens ?? m.tokens ?? m.requests ?? 0),
+          backgroundColor: ['#0ea5e9', '#f97316', '#10b981', '#a855f7', '#eab308', '#ef4444', '#6366f1', '#14b8a6']
+        }]
+      },
+      options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } }
+    });
+  })();
 </script>
 {% endblock %}

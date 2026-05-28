@@ -22,6 +22,10 @@ _client: Optional[httpx.AsyncClient] = None
 def get_client() -> httpx.AsyncClient:
     global _client
     if _client is None:
+        # 如果提供了 CA 证书路径则使用，否则使用系统默认（强制验证）
+        # 不再允许通过配置禁用 SSL 验证，提升安全性
+        verify = settings.SUB2API_CA_BUNDLE if settings.SUB2API_CA_BUNDLE else True
+        
         _client = httpx.AsyncClient(
             base_url=settings.SUB2API_BASE_URL.rstrip("/"),
             headers={
@@ -29,7 +33,7 @@ def get_client() -> httpx.AsyncClient:
                 "Accept": "application/json",
             },
             timeout=settings.REQUEST_TIMEOUT,
-            verify=settings.SUB2API_VERIFY_SSL,
+            verify=verify,  # 强制验证，不可禁用
         )
     return _client
 
