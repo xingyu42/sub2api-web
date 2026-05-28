@@ -1,7 +1,5 @@
 from contextlib import asynccontextmanager
 import re
-import secrets
-from contextvars import ContextVar
 
 import httpx
 from fastapi import FastAPI, Request
@@ -19,66 +17,56 @@ from .routers import accounts, api_keys, auth, dashboard
 from .sub2api_client import Sub2APIError, close_client, get_client
 
 
-# CSP nonce 存储（每个请求独立）
-_csp_nonce: ContextVar[str] = ContextVar('csp_nonce', default='')
-
-
-def get_csp_nonce() -> str:
-    """获取当前请求的 CSP nonce"""
-    return _csp_nonce.get()
-
-
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """添加安全响应头中间件"""
+
     async def dispatch(self, request: Request, call_next):
-        # 为每个请求生成唯一 nonce
-        nonce = secrets.token_urlsafe(16)
-        _csp_nonce.set(nonce)
-        
         response = await call_next(request)
-        
+
         # 防止 MIME 类型嗅探
         response.headers["X-Content-Type-Options"] = "nosniff"
-        
+
         # 防止点击劫持
         response.headers["X-Frame-Options"] = "DENY"
-        
+
         # Referrer 策略
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        
+
         # 权限策略
         response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
-        
-        # 内容安全策略（使用 nonce 替代 unsafe-inline）
+
+        # 内容安全策略
+        # 注意：Tailwind CDN 会动态生成内联 <style>，style-src 不能同时包含 nonce，
+        # 否则浏览器会忽略 'unsafe-inline'，导致 Tailwind 样式被 CSP 拦截。
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            f"script-src 'self' 'nonce-{nonce}' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; "
-            f"style-src 'self' 'nonce-{nonce}' https://cdn.tailwindcss.com; "
+            "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; "
             "img-src 'self' data:; "
             "font-src 'self'; "
-            "connect-src 'self'; "
+            "connect-src 'self' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self'"
         )
-        
+
         return response
 
 
 def sanitize_error_message(exc: Exception) -> str:
     """清理错误信息中的敏感数据"""
     msg = str(exc)[:500]  # 先限制长度，防止 ReDoS
-    
+
     # 移除 IP 地址
     msg = re.sub(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', '[IP]', msg)
-    
+
     # 移除端口号
     msg = re.sub(r':\d{2,5}', ':[PORT]', msg)
-    
+
     # 移除文件路径（Windows 和 Unix）
     msg = re.sub(r'[A-Za-z]:[\\\/][^\s]+', '[PATH]', msg)
     msg = re.sub(r'/[^\s]+', '[PATH]', msg)
-    
+
     # 限制最终长度
     return msg[:200]
 
@@ -121,7 +109,8 @@ app.include_router(api_keys.router)
 async def sub2api_error_handler(request: Request, exc: Sub2APIError):
     return templates.TemplateResponse(
         "error.html",
-        {"request": request, "active": None, "status": exc.status, "message": exc.message},
+        {"request": request, "active": None,
+            "status": exc.status, "message": exc.message},
         status_code=502 if exc.status >= 500 else exc.status,
     )
 
@@ -133,7 +122,7 @@ async def httpx_error_handler(request: Request, exc: httpx.RequestError):
         message = f"网络连接错误：{safe_message}"
     else:
         message = "网络连接错误，请稍后重试"
-    
+
     return templates.TemplateResponse(
         "error.html",
         {

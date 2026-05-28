@@ -69,12 +69,3 @@ templates.env.filters["fmt_money"] = fmt_money
 templates.env.filters["fmt_dt"] = fmt_dt
 templates.env.filters["fmt_compact"] = fmt_compact
 templates.env.filters["fmt_duration"] = fmt_duration
-
-
-# 暴露 CSP nonce 到模板（延迟导入避免循环依赖）
-def _get_csp_nonce_wrapper():
-    from .main import get_csp_nonce
-    return get_csp_nonce()
-
-
-templates.env.globals['csp_nonce'] = _get_csp_nonce_wrapper
