@@ -10,17 +10,17 @@
 
 <form method="get" class="mb-4 flex flex-wrap gap-2">
   <input type="text" name="search" value="{{ filters.search }}" placeholder="按名称/邮箱搜索"
-         class="px-3 py-2 border border-zinc-300 rounded text-sm w-56">
+    class="px-3 py-2 border border-zinc-300 rounded text-sm w-56">
   <select name="platform" class="px-3 py-2 border border-zinc-300 rounded text-sm">
     <option value="">全部平台</option>
     {% for p in ['claude','openai','gemini','antigravity'] %}
-    <option value="{{ p }}" {% if filters.platform == p %}selected{% endif %}>{{ p }}</option>
+    <option value="{{ p }}" {% if filters.platform==p %}selected{% endif %}>{{ p }}</option>
     {% endfor %}
   </select>
   <select name="status" class="px-3 py-2 border border-zinc-300 rounded text-sm">
     <option value="">全部状态</option>
     {% for s in ['normal','error','rate_limited','overload','disabled'] %}
-    <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+    <option value="{{ s }}" {% if filters.status==s %}selected{% endif %}>{{ s }}</option>
     {% endfor %}
   </select>
   <button class="px-4 py-2 bg-zinc-900 text-white text-sm rounded hover:bg-zinc-700">筛选</button>
@@ -44,13 +44,15 @@
     </thead>
     <tbody class="divide-y divide-zinc-100">
       {% for a in items %}
-      <tr class="hover:bg-zinc-50 cursor-pointer" onclick="location.href='/accounts/{{ a.id }}'">
+      <tr class="hover:bg-zinc-50 cursor-pointer js-clickable-row" data-href="/accounts/{{ a.id }}">
         <td class="px-4 py-2 font-medium text-zinc-900">{{ a.name or a.email or ('#' ~ a.id) }}</td>
         <td class="px-4 py-2 text-zinc-600">{{ a.platform or '-' }}</td>
         <td class="px-4 py-2 text-zinc-600">{{ a.type or a.account_type or '-' }}</td>
         <td class="px-4 py-2">
           {% set st = a.status or 'unknown' %}
-          {% set cls = {'normal':'bg-emerald-100 text-emerald-700','error':'bg-red-100 text-red-700','rate_limited':'bg-amber-100 text-amber-700','overload':'bg-orange-100 text-orange-700','disabled':'bg-zinc-100 text-zinc-600'}.get(st, 'bg-zinc-100 text-zinc-600') %}
+          {% set cls = {'normal':'bg-emerald-100 text-emerald-700','error':'bg-red-100
+          text-red-700','rate_limited':'bg-amber-100 text-amber-700','overload':'bg-orange-100
+          text-orange-700','disabled':'bg-zinc-100 text-zinc-600'}.get(st, 'bg-zinc-100 text-zinc-600') %}
           <span class="px-2 py-0.5 rounded text-xs {{ cls }}">{{ st }}</span>
         </td>
         <td class="px-4 py-2 text-right tabular-nums">{{ (a._today.requests if a._today else 0)|fmt_int }}</td>
@@ -58,9 +60,15 @@
         <td class="px-4 py-2 text-right tabular-nums">{{ (a._today.cost if a._today else 0)|fmt_money }}</td>
       </tr>
       {% else %}
-      <tr><td colspan="7" class="px-4 py-8 text-center text-zinc-500">没有数据</td></tr>
+      <tr>
+        <td colspan="7" class="px-4 py-8 text-center text-zinc-500">没有数据</td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/accounts.js"></script>
 {% endblock %}

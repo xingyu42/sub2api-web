@@ -36,15 +36,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
 
         # 内容安全策略
-        # 注意：Tailwind CDN 会动态生成内联 <style>，style-src 不能同时包含 nonce，
-        # 否则浏览器会忽略 'unsafe-inline'，导致 Tailwind 样式被 CSP 拦截。
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; "
-            "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; "
+            "script-src 'self' https://cdn.jsdelivr.net; "
+            "style-src 'self'; "
             "img-src 'self' data:; "
             "font-src 'self'; "
-            "connect-src 'self' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; "
+            "connect-src 'self' https://cdn.jsdelivr.net; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self'"

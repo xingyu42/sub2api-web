@@ -1,0 +1,17 @@
+{
+  "name": "sub2api-web",
+  "version": "1.0.0",
+  "description": "用 sub2api 的管理员 API Key 远程查看自建实例的「上游账号用量」和「API Key 用量」。",
+  "main": "index.js",
+  "scripts": {
+    "dev:css": "tailwindcss -i ./static/src/input.css -o ./static/css/app.css --watch",
+    "build:css": "tailwindcss -i ./static/src/input.css -o ./static/css/app.css --minify"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "tailwindcss": "^4.3.0"
+  }
+}
