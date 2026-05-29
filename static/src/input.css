@@ -4,22 +4,40 @@
 @source "../../static/js";
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer components {
   .nav-pill {
-    @apply px-4 py-1.5 rounded-full text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-200 ring-1 ring-white/10 hover:ring-white/20;
+    @apply px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white hover:bg-white/10 transition-all duration-200 ring-1 ring-white/5 hover:ring-white/20;
   }
 
   .nav-pill.active {
-    @apply bg-gradient-to-r from-indigo-500 to-sky-500 text-white shadow-md shadow-indigo-500/25 ring-0;
+    @apply bg-white text-slate-900 shadow-lg shadow-white/20 ring-0 font-semibold;
   }
 
   @media (max-width: 640px) {
     .nav-pill {
-      @apply px-3 py-1 text-xs;
+      @apply px-3 py-1.5 text-xs;
     }
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 border border-slate-100/50;
+  }
+
+  .btn-primary {
+    @apply bg-slate-900 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors duration-200 shadow-sm hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-medium hover:bg-slate-50 transition-colors duration-200;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all duration-200;
   }
 
   .usage-progress {

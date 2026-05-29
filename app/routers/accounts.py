@@ -1,5 +1,6 @@
 import asyncio
 import re
+import time
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Request
@@ -11,6 +12,8 @@ from ..deps import templates
 from ..security import require_session
 
 router = APIRouter(prefix="/accounts")
+ACCOUNT_META_TTL_SECONDS = 10 * 60
+_account_meta_cache: dict[int, tuple[float, dict]] = {}
 
 
 class AccountFilters(BaseModel):
@@ -18,7 +21,7 @@ class AccountFilters(BaseModel):
     platform: str = Field("", max_length=50, pattern=r'^[a-zA-Z0-9_-]*$')
     status: str = Field("", max_length=20, pattern=r'^[a-zA-Z0-9_-]*$')
     search: str = Field("", max_length=100)
-    
+
     @validator('search')
     def sanitize_search(cls, v):
         # 移除潜在危险字符
@@ -43,6 +46,7 @@ async def list_view(
         search=filters.search or None,
     )
     items = page_data.get("items") or []
+    _warm_account_meta_cache(items)
 
     ids = [int(a["id"]) for a in items if a.get("id") is not None]
     today_stats_raw: dict = {}
@@ -52,7 +56,8 @@ async def list_view(
         except api.Sub2APIError:
             today_stats_raw = {}
 
-    today_map = today_stats_raw.get("stats") if isinstance(today_stats_raw, dict) else None
+    today_map = today_stats_raw.get("stats") if isinstance(
+        today_stats_raw, dict) else None
     if today_map is None and isinstance(today_stats_raw, dict):
         today_map = today_stats_raw
     today_map = today_map or {}
@@ -79,14 +84,14 @@ async def detail_view(request: Request, account_id: int):
     if redirect:
         return redirect
 
-    account_t = api.get_account(account_id)
+    account_t = _get_account_meta(account_id)
     usage_t = api.get_account_usage(account_id)
     stats_t = api.get_account_stats(account_id, days=30)
     today_t = api.get_account_today_stats(account_id)
 
     results = await asyncio.gather(account_t, usage_t, stats_t, today_t, return_exceptions=True)
     account, usage, stats, today = results
-    safe = lambda v: None if isinstance(v, Exception) else v
+    def safe(v): return None if isinstance(v, Exception) else v
     errors = [str(v) for v in results if isinstance(v, Exception)]
 
     return templates.TemplateResponse(
@@ -102,6 +107,47 @@ async def detail_view(request: Request, account_id: int):
             "errors": errors,
         },
     )
+
+
+def _warm_account_meta_cache(accounts: list[dict]) -> None:
+    for account in accounts:
+        _set_account_meta_cache(account)
+
+
+def _set_account_meta_cache(account: dict) -> None:
+    account_id = account.get("id")
+    if account_id is None:
+        return
+    try:
+        key = int(account_id)
+    except (TypeError, ValueError):
+        return
+
+    meta = {k: v for k, v in account.items() if not str(k).startswith("_")}
+    _account_meta_cache[key] = (time.monotonic(), meta)
+
+
+def _get_account_meta_cache(account_id: int) -> Optional[dict]:
+    cached = _account_meta_cache.get(int(account_id))
+    if cached is None:
+        return None
+
+    cached_at, account = cached
+    if time.monotonic() - cached_at > ACCOUNT_META_TTL_SECONDS:
+        _account_meta_cache.pop(int(account_id), None)
+        return None
+    return dict(account)
+
+
+async def _get_account_meta(account_id: int) -> dict:
+    cached = _get_account_meta_cache(account_id)
+    if cached is not None:
+        return cached
+
+    account = await api.get_account(account_id)
+    if isinstance(account, dict):
+        _set_account_meta_cache(account)
+    return account
 
 
 def _build_windows(usage: Optional[dict]) -> list[dict]:

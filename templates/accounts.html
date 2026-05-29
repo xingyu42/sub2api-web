@@ -1,67 +1,70 @@
 {% extends "base.html" %}
 {% block title %}上游账号 · sub2api 用量{% endblock %}
 {% block content %}
-<div class="flex items-center justify-between mb-6">
+<div class="flex items-center justify-between mb-8">
   <div>
-    <h1 class="text-xl font-semibold">上游账号</h1>
-    <p class="text-sm text-zinc-500 mt-1">共 {{ total|fmt_int }} 个账号</p>
+    <h1 class="text-2xl font-bold text-slate-900">上游账号</h1>
+    <p class="text-sm text-slate-600 mt-2">共 {{ total|fmt_int }} 个账号</p>
   </div>
 </div>
 
-<form method="get" class="mb-4 flex flex-wrap gap-2">
-  <input type="text" name="search" value="{{ filters.search }}" placeholder="按名称/邮箱搜索"
-    class="px-3 py-2 border border-zinc-300 rounded text-sm w-56">
-  <select name="platform" class="px-3 py-2 border border-zinc-300 rounded text-sm">
+<form method="get" class="mb-6 flex flex-wrap gap-3">
+  <input type="text" name="search" value="{{ filters.search }}" placeholder="按名称/邮箱搜索" class="input-field w-64">
+  <select name="platform" class="input-field w-40">
     <option value="">全部平台</option>
     {% for p in ['claude','openai','gemini','antigravity'] %}
     <option value="{{ p }}" {% if filters.platform==p %}selected{% endif %}>{{ p }}</option>
     {% endfor %}
   </select>
-  <select name="status" class="px-3 py-2 border border-zinc-300 rounded text-sm">
+  <select name="status" class="input-field w-40">
     <option value="">全部状态</option>
     {% for s in ['normal','error','rate_limited','overload','disabled'] %}
     <option value="{{ s }}" {% if filters.status==s %}selected{% endif %}>{{ s }}</option>
     {% endfor %}
   </select>
-  <button class="px-4 py-2 bg-zinc-900 text-white text-sm rounded hover:bg-zinc-700">筛选</button>
+  <button class="btn-primary">筛选</button>
   {% if filters.search or filters.platform or filters.status %}
-  <a href="/accounts" class="px-4 py-2 border border-zinc-300 text-sm rounded hover:bg-zinc-100">重置</a>
+  <a href="/accounts" class="btn-secondary">重置</a>
   {% endif %}
 </form>
 
-<div class="bg-white rounded-lg border border-zinc-200 overflow-hidden">
+<div class="card overflow-hidden">
   <table class="min-w-full text-sm">
-    <thead class="bg-zinc-50 text-zinc-600">
+    <thead class="bg-slate-50 text-slate-700 border-b border-slate-200">
       <tr>
-        <th class="px-4 py-2 text-left font-medium">名称</th>
-        <th class="px-4 py-2 text-left font-medium">平台</th>
-        <th class="px-4 py-2 text-left font-medium">类型</th>
-        <th class="px-4 py-2 text-left font-medium">状态</th>
-        <th class="px-4 py-2 text-right font-medium">今日请求</th>
-        <th class="px-4 py-2 text-right font-medium">今日 Token</th>
-        <th class="px-4 py-2 text-right font-medium">今日费用</th>
+        <th class="px-6 py-3 text-left font-semibold">名称</th>
+        <th class="px-6 py-3 text-left font-semibold">平台</th>
+        <th class="px-6 py-3 text-left font-semibold">类型</th>
+        <th class="px-6 py-3 text-left font-semibold">状态</th>
+        <th class="px-6 py-3 text-right font-semibold">今日请求</th>
+        <th class="px-6 py-3 text-right font-semibold">今日 Token</th>
+        <th class="px-6 py-3 text-right font-semibold">今日费用</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-zinc-100">
+    <tbody class="divide-y divide-slate-100">
       {% for a in items %}
-      <tr class="hover:bg-zinc-50 cursor-pointer js-clickable-row" data-href="/accounts/{{ a.id }}">
-        <td class="px-4 py-2 font-medium text-zinc-900">{{ a.name or a.email or ('#' ~ a.id) }}</td>
-        <td class="px-4 py-2 text-zinc-600">{{ a.platform or '-' }}</td>
-        <td class="px-4 py-2 text-zinc-600">{{ a.type or a.account_type or '-' }}</td>
-        <td class="px-4 py-2">
+      <tr class="js-clickable-row hover:bg-slate-50/50 cursor-pointer transition-colors duration-150"
+        data-href="/accounts/{{ a.id }}">
+        <td class="px-6 py-4 font-medium text-slate-900">{{ a.name or a.email or ('#' ~ a.id) }}</td>
+        <td class="px-6 py-4 text-slate-600">{{ a.platform or '-' }}</td>
+        <td class="px-6 py-4 text-slate-600">{{ a.type or a.account_type or '-' }}</td>
+        <td class="px-6 py-4">
           {% set st = a.status or 'unknown' %}
           {% set cls = {'normal':'bg-emerald-100 text-emerald-700','error':'bg-red-100
           text-red-700','rate_limited':'bg-amber-100 text-amber-700','overload':'bg-orange-100
-          text-orange-700','disabled':'bg-zinc-100 text-zinc-600'}.get(st, 'bg-zinc-100 text-zinc-600') %}
-          <span class="px-2 py-0.5 rounded text-xs {{ cls }}">{{ st }}</span>
+          text-orange-700','disabled':'bg-slate-100 text-slate-600'}.get(st, 'bg-slate-100 text-slate-600') %}
+          <span class="px-2.5 py-1 rounded-md text-xs font-medium {{ cls }}">{{ st }}</span>
         </td>
-        <td class="px-4 py-2 text-right tabular-nums">{{ (a._today.requests if a._today else 0)|fmt_int }}</td>
-        <td class="px-4 py-2 text-right tabular-nums">{{ (a._today.tokens if a._today else 0)|fmt_int }}</td>
-        <td class="px-4 py-2 text-right tabular-nums">{{ (a._today.cost if a._today else 0)|fmt_money }}</td>
+        <td class="px-6 py-4 text-right tabular-nums text-slate-900">{{ (a._today.requests if a._today else 0)|fmt_int
+          }}</td>
+        <td class="px-6 py-4 text-right tabular-nums text-slate-900">{{ (a._today.tokens if a._today else 0)|fmt_int }}
+        </td>
+        <td class="px-6 py-4 text-right tabular-nums font-medium text-slate-900">{{ (a._today.cost if a._today else
+          0)|fmt_money }}</td>
       </tr>
       {% else %}
       <tr>
-        <td colspan="7" class="px-4 py-8 text-center text-zinc-500">没有数据</td>
+        <td colspan="7" class="px-6 py-12 text-center text-slate-500">没有数据</td>
       </tr>
       {% endfor %}
     </tbody>

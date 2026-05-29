@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Request
@@ -20,9 +21,12 @@ async def dashboard(request: Request):
     start = today - timedelta(days=6)
     end = today
 
-    stats = await api.get_dashboard_stats()
-    trend = await api.get_usage_trend(start.isoformat(), end.isoformat(), granularity="day")
-    models = await api.get_model_stats(start.isoformat(), end.isoformat())
+    stats, trend, models = await asyncio.gather(
+        api.get_dashboard_stats(),
+        api.get_usage_trend(start.isoformat(),
+                            end.isoformat(), granularity="day"),
+        api.get_model_stats(start.isoformat(), end.isoformat()),
+    )
 
     return templates.TemplateResponse(
         "dashboard.html",

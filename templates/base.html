@@ -6,16 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}sub2api 用量{% endblock %}</title>
   <link rel="stylesheet" href="/static/css/app.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
 </head>
 
-<body class="bg-zinc-50 text-zinc-900 min-h-screen">
+<body class="bg-slate-50 text-slate-900 min-h-screen">
   {% if request.cookies.get('sub2api_web_session') %}
-  <nav class="bg-zinc-900 text-zinc-100">
+  <nav class="bg-slate-900 text-slate-100 border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex h-14 items-center justify-between">
-        <div class="flex items-center gap-4 sm:gap-8">
-          <span class="font-semibold text-white text-sm sm:text-base">sub2api 用量</span>
+      <div class="flex h-16 items-center justify-between">
+        <div class="flex items-center gap-6 sm:gap-10">
+          <span class="font-bold text-white text-base sm:text-lg tracking-tight">sub2api</span>
           <div class="flex gap-2 sm:gap-3">
             <a class="nav-pill {% if active == 'dashboard' %}active{% endif %}" href="/">仪表盘</a>
             <a class="nav-pill {% if active == 'accounts' %}active{% endif %}" href="/accounts">上游账号</a>
@@ -23,14 +22,15 @@
           </div>
         </div>
         <form method="post" action="/logout">
-          <button class="text-xs sm:text-sm text-zinc-400 hover:text-white" type="submit">退出</button>
+          <button class="text-sm text-slate-400 hover:text-white transition-colors duration-200 font-medium"
+            type="submit">退出</button>
         </form>
       </div>
     </div>
   </nav>
   {% endif %}
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
     {% block content %}{% endblock %}
   </main>
   {% block scripts %}{% endblock %}
