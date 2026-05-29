@@ -18,8 +18,9 @@
   </select>
   <select name="status" class="input-field w-40">
     <option value="">全部状态</option>
-    {% for s in ['normal','error','rate_limited','overload','disabled'] %}
-    <option value="{{ s }}" {% if filters.status==s %}selected{% endif %}>{{ s }}</option>
+    {% set status_labels = {'active':'启用','disabled':'禁用','error':'错误'} %}
+    {% for s in ['active','disabled','error'] %}
+    <option value="{{ s }}" {% if filters.status==s %}selected{% endif %}>{{ status_labels[s] }}</option>
     {% endfor %}
   </select>
   <button class="btn-primary">筛选</button>
@@ -50,10 +51,10 @@
         <td class="px-6 py-4 text-slate-600">{{ a.type or a.account_type or '-' }}</td>
         <td class="px-6 py-4">
           {% set st = a.status or 'unknown' %}
-          {% set cls = {'normal':'bg-emerald-100 text-emerald-700','error':'bg-red-100
-          text-red-700','rate_limited':'bg-amber-100 text-amber-700','overload':'bg-orange-100
-          text-orange-700','disabled':'bg-slate-100 text-slate-600'}.get(st, 'bg-slate-100 text-slate-600') %}
-          <span class="px-2.5 py-1 rounded-md text-xs font-medium {{ cls }}">{{ st }}</span>
+          {% set status_labels = {'active':'启用','disabled':'禁用','error':'错误'} %}
+          {% set cls = {'active':'bg-emerald-100 text-emerald-700','error':'bg-red-100
+          text-red-700','disabled':'bg-slate-100 text-slate-600'}.get(st, 'bg-slate-100 text-slate-600') %}
+          <span class="px-2.5 py-1 rounded-md text-xs font-medium {{ cls }}">{{ status_labels.get(st, '未知') }}</span>
         </td>
         <td class="px-6 py-4 text-right tabular-nums text-slate-900">{{ (a._today.requests if a._today else 0)|fmt_int
           }}</td>
