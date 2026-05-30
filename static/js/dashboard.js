@@ -105,7 +105,7 @@ function renderTrend() {
         },
         x: {
           grid: { display: false },
-          ticks: { color: '#64748b', font: { size: 11 } }
+          ticks: { color: '#64748b', font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }
         }
       }
     }

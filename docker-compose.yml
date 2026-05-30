@@ -1,7 +1,6 @@
 services:
   sub2api-web:
     build: .
-    image: sub2api-web:latest
     container_name: sub2api-web
     restart: unless-stopped
     ports:

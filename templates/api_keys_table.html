@@ -1,35 +1,36 @@
 <div id="api-keys-table">
   <div class="card overflow-hidden">
-    <table class="min-w-full text-sm">
+    <div class="table-scroll">
+    <table class="min-w-full text-sm whitespace-nowrap">
       <thead class="bg-slate-50 text-slate-700 border-b border-slate-200">
         <tr>
-          <th class="px-4 py-3 text-left font-semibold">Key 名称</th>
-          <th class="px-4 py-3 text-left font-semibold">所属用户</th>
-          <th class="px-4 py-3 text-left font-semibold">分组</th>
-          <th class="px-4 py-3 text-left font-semibold">状态</th>
-          <th class="px-4 py-3 text-left font-semibold w-[200px]">速率限速</th>
-          <th class="px-4 py-3 text-right font-semibold">今日费用</th>
-          <th class="px-4 py-3 text-right font-semibold">累计费用</th>
-          <th class="px-4 py-3 text-left font-semibold">最后使用</th>
+          <th class="px-3 sm:px-4 py-3 text-left font-semibold">Key 名称</th>
+          <th class="px-3 sm:px-4 py-3 text-left font-semibold">所属用户</th>
+          <th class="px-3 sm:px-4 py-3 text-left font-semibold">分组</th>
+          <th class="px-3 sm:px-4 py-3 text-left font-semibold">状态</th>
+          <th class="px-3 sm:px-4 py-3 text-left font-semibold min-w-[140px] lg:w-[200px]">速率限速</th>
+          <th class="px-3 sm:px-4 py-3 text-right font-semibold">今日费用</th>
+          <th class="px-3 sm:px-4 py-3 text-right font-semibold">累计费用</th>
+          <th class="px-3 sm:px-4 py-3 text-left font-semibold">最后使用</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100">
         {% for k in items %}
         {% set u = k._usage or {} %}
         <tr class="hover:bg-slate-50/50 transition-colors duration-150">
-          <td class="px-4 py-3 font-medium text-slate-900">
+          <td class="px-3 sm:px-4 py-3 font-medium text-slate-900">
             <a href="/api-keys/{{ k.id }}" class="hover:text-blue-600 transition-colors">{{ k.name or ('#' ~ k.id)
               }}</a>
           </td>
-          <td class="px-4 py-3 text-slate-600">{{ k._user_email or k._user_id or '-' }}</td>
-          <td class="px-4 py-3 text-slate-600">{{ (k.group.name if k.group else '-') }}</td>
-          <td class="px-4 py-3">
+          <td class="px-3 sm:px-4 py-3 text-slate-600">{{ k._user_email or k._user_id or '-' }}</td>
+          <td class="px-3 sm:px-4 py-3 text-slate-600">{{ (k.group.name if k.group else '-') }}</td>
+          <td class="px-3 sm:px-4 py-3">
             {% set st = k.status or 'unknown' %}
             {% set cls = {'active':'bg-emerald-100 text-emerald-700','disabled':'bg-slate-100
             text-slate-600','expired':'bg-amber-100 text-amber-700'}.get(st, 'bg-slate-100 text-slate-600') %}
             <span class="px-2.5 py-1 rounded-md text-xs font-medium {{ cls }}">{{ st }}</span>
           </td>
-          <td class="px-4 py-3">
+          <td class="px-3 sm:px-4 py-3">
             <div class="space-y-1">
               {% set active = k._windows | selectattr('limit', 'gt', 0) | list %}
               {% if active %}
@@ -53,18 +54,19 @@
               {% endif %}
             </div>
           </td>
-          <td class="px-4 py-3 text-right tabular-nums text-slate-900">{{ u.today_actual_cost|fmt_money(2) }}</td>
-          <td class="px-4 py-3 text-right tabular-nums font-medium text-slate-900">{{ u.total_actual_cost|fmt_money(2)
+          <td class="px-3 sm:px-4 py-3 text-right tabular-nums text-slate-900">{{ u.today_actual_cost|fmt_money(2) }}</td>
+          <td class="px-3 sm:px-4 py-3 text-right tabular-nums font-medium text-slate-900">{{ u.total_actual_cost|fmt_money(2)
             }}</td>
-          <td class="px-4 py-3 text-xs text-slate-500">{{ k.last_used_at|fmt_dt }}</td>
+          <td class="px-3 sm:px-4 py-3 text-xs text-slate-500">{{ k.last_used_at|fmt_dt }}</td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="9" class="px-6 py-12 text-center text-slate-500">没有数据</td>
+          <td colspan="8" class="px-6 py-12 text-center text-slate-500">没有数据</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
+    </div>
   </div>
   <div class="text-xs text-slate-400 text-right mt-3">数据更新于 {{ updated_at }}</div>
 </div>

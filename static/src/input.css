@@ -20,12 +20,16 @@ body {
 
   @media (max-width: 640px) {
     .nav-pill {
-      @apply px-3 py-1.5 text-xs;
+      @apply px-3 py-2 text-xs;
     }
   }
 
   .card {
     @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 border border-slate-100/50;
+  }
+
+  .table-scroll {
+    @apply overflow-x-auto;
   }
 
   .btn-primary {
@@ -37,7 +41,7 @@ body {
   }
 
   .input-field {
-    @apply w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all duration-200;
+    @apply w-full max-w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all duration-200;
   }
 
   .usage-progress {

@@ -9,58 +9,59 @@
 </div>
 
 <form method="get" class="mb-6 flex flex-wrap gap-3">
-  <input type="text" name="search" value="{{ filters.search }}" placeholder="按名称/邮箱搜索" class="input-field w-64">
-  <select name="platform" class="input-field w-40">
+  <input type="text" name="search" value="{{ filters.search }}" placeholder="按名称/邮箱搜索" class="input-field w-full sm:w-64">
+  <select name="platform" class="input-field w-full sm:w-40">
     <option value="">全部平台</option>
     {% for p in ['claude','openai','gemini','antigravity'] %}
     <option value="{{ p }}" {% if filters.platform==p %}selected{% endif %}>{{ p }}</option>
     {% endfor %}
   </select>
-  <select name="status" class="input-field w-40">
+  <select name="status" class="input-field w-full sm:w-40">
     <option value="">全部状态</option>
     {% set status_labels = {'active':'启用','disabled':'禁用','error':'错误'} %}
     {% for s in ['active','disabled','error'] %}
     <option value="{{ s }}" {% if filters.status==s %}selected{% endif %}>{{ status_labels[s] }}</option>
     {% endfor %}
   </select>
-  <button class="btn-primary">筛选</button>
+  <button class="btn-primary w-full sm:w-auto">筛选</button>
   {% if filters.search or filters.platform or filters.status %}
-  <a href="/accounts" class="btn-secondary">重置</a>
+  <a href="/accounts" class="btn-secondary w-full sm:w-auto text-center">重置</a>
   {% endif %}
 </form>
 
 <div class="card overflow-hidden">
-  <table class="min-w-full text-sm">
+  <div class="table-scroll">
+  <table class="min-w-full text-sm whitespace-nowrap">
     <thead class="bg-slate-50 text-slate-700 border-b border-slate-200">
       <tr>
-        <th class="px-6 py-3 text-left font-semibold">名称</th>
-        <th class="px-6 py-3 text-left font-semibold">平台</th>
-        <th class="px-6 py-3 text-left font-semibold">类型</th>
-        <th class="px-6 py-3 text-left font-semibold">状态</th>
-        <th class="px-6 py-3 text-right font-semibold">今日请求</th>
-        <th class="px-6 py-3 text-right font-semibold">今日 Token</th>
-        <th class="px-6 py-3 text-right font-semibold">今日费用</th>
+        <th class="px-3 sm:px-6 py-3 text-left font-semibold">名称</th>
+        <th class="px-3 sm:px-6 py-3 text-left font-semibold">平台</th>
+        <th class="px-3 sm:px-6 py-3 text-left font-semibold">类型</th>
+        <th class="px-3 sm:px-6 py-3 text-left font-semibold">状态</th>
+        <th class="px-3 sm:px-6 py-3 text-right font-semibold">今日请求</th>
+        <th class="px-3 sm:px-6 py-3 text-right font-semibold">今日 Token</th>
+        <th class="px-3 sm:px-6 py-3 text-right font-semibold">今日费用</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-slate-100">
       {% for a in items %}
       <tr class="js-clickable-row hover:bg-slate-50/50 cursor-pointer transition-colors duration-150"
         data-href="/accounts/{{ a.id }}">
-        <td class="px-6 py-4 font-medium text-slate-900">{{ a.name or a.email or ('#' ~ a.id) }}</td>
-        <td class="px-6 py-4 text-slate-600">{{ a.platform or '-' }}</td>
-        <td class="px-6 py-4 text-slate-600">{{ a.type or a.account_type or '-' }}</td>
-        <td class="px-6 py-4">
+        <td class="px-3 sm:px-6 py-4 font-medium text-slate-900">{{ a.name or a.email or ('#' ~ a.id) }}</td>
+        <td class="px-3 sm:px-6 py-4 text-slate-600">{{ a.platform or '-' }}</td>
+        <td class="px-3 sm:px-6 py-4 text-slate-600">{{ a.type or a.account_type or '-' }}</td>
+        <td class="px-3 sm:px-6 py-4">
           {% set st = a.status or 'unknown' %}
           {% set status_labels = {'active':'启用','disabled':'禁用','error':'错误'} %}
           {% set cls = {'active':'bg-emerald-100 text-emerald-700','error':'bg-red-100
           text-red-700','disabled':'bg-slate-100 text-slate-600'}.get(st, 'bg-slate-100 text-slate-600') %}
           <span class="px-2.5 py-1 rounded-md text-xs font-medium {{ cls }}">{{ status_labels.get(st, '未知') }}</span>
         </td>
-        <td class="px-6 py-4 text-right tabular-nums text-slate-900">{{ (a._today.requests if a._today else 0)|fmt_int
+        <td class="px-3 sm:px-6 py-4 text-right tabular-nums text-slate-900">{{ (a._today.requests if a._today else 0)|fmt_int
           }}</td>
-        <td class="px-6 py-4 text-right tabular-nums text-slate-900">{{ (a._today.tokens if a._today else 0)|fmt_int }}
+        <td class="px-3 sm:px-6 py-4 text-right tabular-nums text-slate-900">{{ (a._today.tokens if a._today else 0)|fmt_int }}
         </td>
-        <td class="px-6 py-4 text-right tabular-nums font-medium text-slate-900">{{ (a._today.cost if a._today else
+        <td class="px-3 sm:px-6 py-4 text-right tabular-nums font-medium text-slate-900">{{ (a._today.cost if a._today else
           0)|fmt_money }}</td>
       </tr>
       {% else %}
@@ -70,6 +71,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
 </div>
 {% endblock %}
 

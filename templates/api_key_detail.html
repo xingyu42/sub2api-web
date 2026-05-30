@@ -13,10 +13,10 @@
     </svg>
     返回 API Key 列表
   </a>
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-bold text-slate-900">{{ key.name or ('#' ~ key.id) }}</h1>
-      <div class="text-sm text-slate-600 mt-2">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-2xl font-bold text-slate-900 break-words">{{ key.name or ('#' ~ key.id) }}</h1>
+      <div class="text-sm text-slate-600 mt-2 break-words">
         用户 {{ key._user_email or key._user_id }} ·
         分组 {{ key.group.name if key.group else '-' }} ·
         <span class="font-mono text-xs">{{ (key.key[:14] ~ '…') if key.key else '' }}</span>
@@ -48,9 +48,9 @@
       <span class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-700">U {{ w.user_cost|fmt_money(2)
         }}</span>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <span class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white {{ badge }}">{{ w.label }}</span>
-      <progress class="usage-progress flex-1 max-w-xs h-2.5 {{ pct_color(w.pct) }}"
+      <progress class="usage-progress flex-1 basis-full sm:basis-auto max-w-none sm:max-w-xs h-2.5 {{ pct_color(w.pct) }}"
         value="{{ (w.pct if w.pct is not none and w.pct <= 100 else (100 if w.pct is not none else 0)) }}"
         max="100"></progress>
       <span class="text-sm font-medium text-slate-700 tabular-nums min-w-[5rem]">

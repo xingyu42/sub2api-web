@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}仪表盘 · sub2api 用量{% endblock %}
 {% macro card(title, value, sub=None, accent='slate') %}
-<div class="card p-6">
+<div class="card p-4 sm:p-6">
   <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">{{ title }}</div>
-  <div class="text-3xl font-bold text-slate-900 mb-1">{{ value }}</div>
+  <div class="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 break-words tabular-nums">{{ value }}</div>
   {% if sub %}<div class="text-sm text-slate-600">{{ sub }}</div>{% endif %}
 </div>
 {% endmacro %}
@@ -14,7 +14,7 @@
   <p class="text-sm text-slate-600 mt-2">最近 7 天（{{ start_date }} 至 {{ end_date }}）</p>
 </div>
 
-<section class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+<section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
   {{ card('总用户', stats.total_users|fmt_int, '今日新增 ' ~ (stats.today_new_users|fmt_int)) }}
   {{ card('总 API Key', stats.total_api_keys|fmt_int, '活跃 ' ~ (stats.active_api_keys|fmt_int)) }}
   {{ card('上游账号', stats.total_accounts|fmt_int, '正常 ' ~ (stats.normal_accounts|fmt_int) ~ ' / 异常 ' ~
@@ -22,7 +22,7 @@
   {{ card('RPM / TPM', (stats.rpm|fmt_int) ~ ' / ' ~ (stats.tpm|fmt_int), '实时性能') }}
 </section>
 
-<section class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+<section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
   {{ card('今日请求', stats.today_requests|fmt_int) }}
   {{ card('今日 Token', stats.today_tokens|fmt_int,
   '输入 ' ~ (stats.today_input_tokens|fmt_int) ~ ' · 输出 ' ~ (stats.today_output_tokens|fmt_int)) }}
@@ -31,11 +31,11 @@
 </section>
 
 <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <div class="lg:col-span-2 card p-6">
+  <div class="lg:col-span-2 card p-4 sm:p-6">
     <h2 class="text-base font-semibold text-slate-900 mb-6">7 日用量趋势</h2>
     <canvas id="trendChart" height="120"></canvas>
   </div>
-  <div class="card p-6">
+  <div class="card p-4 sm:p-6">
     <h2 class="text-base font-semibold text-slate-900 mb-6">模型分布</h2>
     <div class="max-w-[320px] mx-auto">
       <canvas id="modelChart"></canvas>

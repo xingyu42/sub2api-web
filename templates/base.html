@@ -13,16 +13,16 @@
   <nav class="bg-slate-900 text-slate-100 border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex h-16 items-center justify-between">
-        <div class="flex items-center gap-6 sm:gap-10">
+        <div class="flex items-center gap-2 sm:gap-10 min-w-0">
           <span class="font-bold text-white text-base sm:text-lg tracking-tight">sub2api</span>
-          <div class="flex gap-2 sm:gap-3">
+          <div class="flex gap-2 sm:gap-3 min-w-0 overflow-x-auto">
             <a class="nav-pill {% if active == 'dashboard' %}active{% endif %}" href="/">仪表盘</a>
             <a class="nav-pill {% if active == 'accounts' %}active{% endif %}" href="/accounts">上游账号</a>
             <a class="nav-pill {% if active == 'api-keys' %}active{% endif %}" href="/api-keys">API Keys</a>
           </div>
         </div>
         <form method="post" action="/logout">
-          <button class="text-sm text-slate-400 hover:text-white transition-colors duration-200 font-medium"
+          <button class="text-sm text-slate-400 hover:text-white transition-colors duration-200 font-medium max-sm:px-3 max-sm:py-2 max-sm:-mr-1"
             type="submit">退出</button>
         </form>
       </div>

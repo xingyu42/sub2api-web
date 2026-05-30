@@ -86,6 +86,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CSRFMiddleware,
     secret=settings.SESSION_SECRET,
+    exempt_urls=[re.compile(r"^/login$")],
     cookie_name="csrf_token",
     header_name="X-CSRF-Token",
     cookie_secure=settings.COOKIE_SECURE,
