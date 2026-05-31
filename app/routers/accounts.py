@@ -160,9 +160,12 @@ def _build_windows(usage: Optional[dict]) -> list[dict]:
         src = usage.get(src_key)
         if not isinstance(src, dict):
             continue
-        ws = src.get("window_stats") or {}
+        raw_window_stats = src.get("window_stats")
+        has_window_stats = isinstance(raw_window_stats, dict)
+        ws = raw_window_stats if has_window_stats else {}
         out.append({
             "label": label,
+            "has_window_stats": has_window_stats,
             "requests": ws.get("requests"),
             "tokens": ws.get("tokens"),
             "actual_cost": ws.get("standard_cost"),
