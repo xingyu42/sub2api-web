@@ -40,6 +40,7 @@
     const requests = series.map(d => d.requests || 0);
     const tokens = series.map(d => d.total_tokens ?? d.tokens ?? 0);
     const cost = series.map(d => d.total_cost ?? d.cost ?? d.actual_cost ?? 0);
+    const isMobile = window.matchMedia('(max-width: 639px)').matches;
 
     new Chart(ctx, {
       type: 'line',
@@ -84,11 +85,12 @@
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: {
+            position: isMobile ? 'bottom' : 'top',
             labels: {
               font: { size: 12, weight: '500' },
               color: '#475569',
               usePointStyle: true,
-              padding: 16
+              padding: isMobile ? 10 : 16
             }
           },
           tooltip: {
@@ -121,7 +123,14 @@
           },
           x: {
             grid: { display: false },
-            ticks: { color: '#64748b', font: { size: 11 } }
+            ticks: {
+              color: '#64748b',
+              font: { size: 11 },
+              autoSkip: true,
+              maxTicksLimit: isMobile ? 7 : 12,
+              maxRotation: isMobile ? 0 : 45,
+              minRotation: 0
+            }
           }
         }
       }

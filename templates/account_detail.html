@@ -101,7 +101,11 @@
 
 <section class="card p-6">
   <h2 class="text-base font-semibold text-slate-900 mb-6">30 日用量趋势</h2>
-  <canvas id="statsChart" height="80"></canvas>
+  <div class="overflow-x-auto pb-2">
+    <div class="min-w-[720px]">
+      <canvas id="statsChart" height="80"></canvas>
+    </div>
+  </div>
 </section>
 
 {% endblock %}
