@@ -156,7 +156,7 @@ async def get_account(account_id: int) -> dict:
     return await _get(f"/api/v1/admin/accounts/{account_id}")
 
 
-async def get_account_usage(account_id: int, source: str = "active") -> dict:
+async def get_account_usage(account_id: int, source: str = "passive") -> dict:
     return await _get(f"/api/v1/admin/accounts/{account_id}/usage", source=source)
 
 

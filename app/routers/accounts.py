@@ -87,7 +87,8 @@ async def detail_view(request: Request, account_id: int):
         return redirect
 
     account_t = _get_account_meta(account_id)
-    usage_t = api.get_account_usage(account_id)
+    # 使用被动采样数据，避免访问详情页时触发上游订阅/限速接口的主动查询。
+    usage_t = api.get_account_usage(account_id, source="passive")
     stats_t = api.get_account_stats(account_id, days=30)
     today_t = api.get_account_today_stats(account_id)
     now = datetime.now(timezone.utc)
