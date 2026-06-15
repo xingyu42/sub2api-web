@@ -68,16 +68,20 @@
     <div class="card p-5">
       <div class="flex flex-wrap items-center gap-2 mb-3">
         <span class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white {{ badge }}">{{ w.label }}</span>
-        {% if w.has_window_stats %}
+        {% if w.has_stats %}
         <span class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-700">{{ w.requests|fmt_int }}
           req</span>
         <span class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-700">{{ w.tokens|fmt_compact
           }}</span>
         <span class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-700">A {{
           w.actual_cost|fmt_money(2) }}</span>
+        {% if w.user_cost is not none %}
         <span class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-700">U {{
           w.user_cost|fmt_money(2) }}</span>
         {% endif %}
+        {% endif %}
+        <span class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700">预计额度: {% if
+          w.estimated_quota is not none %}{{ w.estimated_quota|fmt_money(2) }}{% else %}—{% endif %}</span>
       </div>
       <div class="flex items-center gap-3">
         <progress class="usage-progress min-w-0 flex-1 h-2.5 {{ color }}"

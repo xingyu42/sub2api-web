@@ -111,6 +111,18 @@ async def get_usage_trend_for_key(
     )
 
 
+async def get_usage_trend_for_account(
+    account_id: int, start_date: str, end_date: str, granularity: str = "hour"
+) -> dict:
+    return await _get(
+        "/api/v1/admin/dashboard/trend",
+        account_id=account_id,
+        start_date=start_date,
+        end_date=end_date,
+        granularity=granularity,
+    )
+
+
 async def get_model_stats(start_date: str, end_date: str) -> Any:
     return await _get(
         "/api/v1/admin/dashboard/models",
